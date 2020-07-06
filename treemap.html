@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+  position: relative;
+}
+
+.node {
+  box-sizing: border-box;
+  line-height: 1em;
+  overflow: hidden;
+  position: absolute;
+  white-space: pre;
+  background: #ddd;
+}
+
+.node-label,
+.node-value {
+  margin: 4px;
+}
+
+.node-value {
+  margin-top: -2px;
+}
+
+.node-value {
+  font-weight: bold;
+}
+
+.tooltip {
+            background: #eee;
+            box-shadow: 0 0 5px #999999;
+            color: #333;
+            display: none;
+            font-size: 12px;
+            left: 130px;
+            padding: 10px;
+            position: absolute;
+            text-align: center;
+            top: 95px;
+            width: 80px;
+            z-index: 10;
+        }
+
+</style>
+<body>
+    <select name="" id="selection"></select>
+    <div class="treemap"></div>
+<script src="//d3js.org/d3.v4.0.0-alpha.49.min.js"></script>
+<script>
+
+var width = 960,
+    height = 1060,
+    color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var tooltip = d3.select('.donutChart')        
+                            .append('div')                         
+                                .attr('class', 'tooltip');             
+
+                            tooltip.append('div')                    
+                                .attr('class', 'parastatal');               
+
+                            tooltip.append('div')                    
+                                .attr('class', 'allocation');               
+
+                            tooltip.append('div')                    
+                                .attr('class', 'percent');
+/*var format = d3.formatLocale({
+  decimal: ".",
+  thousands: ",",
+  grouping: [3],
+  currency: ["£", ""]
+}).format("$,d");*/
+
+var nest = d3.nest()
+    .key(function(d) { return d.parastatal; })
+    //.key(function(d) { return d.year; })
+    //.key(function(d) { return d.Ticket_class_description; })
+    .rollup(function(d) { return d3.sum(d, function(d) { return d.allocation; }); });
+
+var treemap = d3.treemap()
+    .size([width, height])
+    .padding(1)
+    .round(true);
+
+d3.csv("para_data.csv", type, function(error, data) {
+  if (error) throw error;
+
+  var root = d3.hierarchy({values: nest.entries(data)}, function(d) { return d.values; })
+      .sum(function(d) { return d.value; })
+      .sort(function(a, b) { return b.value - a.value; });
+
+  treemap(root);
+
+  var node = d3.select(".treemap")
+    .selectAll(".node")
+    .data(root.leaves())
+    .enter().append("div")
+      .attr("class", "node")
+      .style("left", function(d) { return d.x0 + "px"; })
+      .style("top", function(d) { return d.y0 + "px"; })
+      .style("width", function(d) { return d.x1 - d.x0 + "px"; })
+      .style("height", function(d) { return d.y1 - d.y0 + "px"; })
+      //.style("background", function(d) { while (d.depth > 1) d = d.parent.data.key; return color(d.data.key); });
+
+  node.append("div")
+      .attr("class", "node-label")
+      .text(function(d) { return d.data.key; });
+
+  node.append("div")
+      .attr("class", "node-value")
+      .text(function(d) { return d.value; });
+
+      node.on('mouseover', function(d) {
+                var total = d3.sum(data.map(function(d) {
+                return (d.enabled) ? d.allocation: 0;
+            }));
+                var percent = Math.round(1000 * d.data.allocation / total) / 10;
+                    tooltip.select('.parastatal').html(d.data.parastatal);
+                    tooltip.select('.allocation').html(d.data.allocation);
+                    tooltip.select('.percent').html(percent + '%');
+                    tooltip.style('display', 'block');
+                    });  
+
+            node.on('mouseout', function(d) {
+                tooltip.style('display', 'none');
+            }); 
+
+            node.on('mousemove', function(d) {
+                tooltip.style('top', (d3.event.layerY + 10) + 'px')
+                    .style('left', (d3.event.layerX + 10) + 'px');
+                });
+
+            var list = d3.select('selection')
+                         .selectAll('option')
+                         .data('nest')
+                         .enter()
+                         .append('option')
+                            .attr('value', function (d) {
+                                return d.key;
+                            })
+  
+});
+
+function type(d) {
+  d.allocation = +d.allocation;
+  return d;
+}
+
+</script>

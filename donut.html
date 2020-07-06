@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://d3js.org/d3.v4.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <!--<link rel="stylesheet" href="style.css">-->
     <title>Donut Chart</title>
 </head>
 <body>
@@ -16,7 +16,7 @@
 <style>
 
     /* Hide the browser's default radio button */
-.container input {
+/*.container input {
   position: absolute;
   opacity: 0;
   cursor: pointer;
@@ -25,8 +25,8 @@
 }
 
 /* Customize the label (the container) */
-.container {
-  display: block;
+/*.container {
+  display: flex;
   position: relative;
   padding-left: 35px;
   margin-bottom: 12px;
@@ -39,7 +39,7 @@
 }
 
 /* Create a custom radio button */
-.checkmark {
+/*.checkmark {
   top: 0;
   left: 0;
   height: 25px;
@@ -48,41 +48,41 @@
   border-radius: 50%;
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
+  /*flex-wrap: wrap;
   justify-content: space-between;
 }
 
 /* On mouse-over, add a grey background color */
-.container:hover input ~ .checkmark {
+/*.container:hover input ~ .checkmark {
   background-color: #ccc;
 }
 
 /* When the radio button is checked, add a blue background */
-.container input:checked ~ .checkmark {
+/*.container input:checked ~ .checkmark {
   background-color: #2196F3;
 }
 
 /* Create the indicator (the dot/circle - hidden when not checked) */
-.checkmark:after {
+/*.checkmark:after {
   content: "";
   position: absolute;
   display: none;
 }
 
 /* Show the indicator (dot/circle) when checked */
-.container input:checked ~ .checkmark:after {
+/*.container input:checked ~ .checkmark:after {
   display: block;
 }
 
 /* Style the indicator (dot/circle) */
-.container .checkmark:after {
+/*.container .checkmark:after {
   top: 9px;
   left: 9px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: white;
-}
+}*/
  .legend {
             font-size: 10px;
         }
@@ -121,15 +121,20 @@
             width: 80px;
             z-index: 10;
         }
+
+        #form {
+            display: inline-block;
+        }
 </style>
 <script>
 var width = 1440,
     height = 1440,
     radius = Math.min(width, height) / 2;
-    legendSpacing = 4;
-    legendRectSize = 18;
+    legendSpacing = 2;
+    legendRectSize = 10;
 
 var color = d3.scaleOrdinal(d3.schemeCategory20b);
+
 
 var tooltip = d3.select('.donutChart')        
                             .append('div')                         
@@ -150,7 +155,7 @@ var pie = d3.pie()
 
 var arc = d3.arc()
     .innerRadius(radius - 150)
-    .outerRadius(radius - 20);
+    .outerRadius(radius - 400);
 
 var svg = d3.select(".donutChart")
             .append("svg")
@@ -179,8 +184,10 @@ d3.csv("para_data.csv", type, function(error, data) {
       .on("change", change)
     .filter(function(d, i) { return !i; })
       .each(change)
-      .property("checked", true);
+      .property("checked", true)
+      //.on('click', remove);
 
+//  label.on('change', remove)
   label.append("span")
       .attr('class', 'checkmark'); 
 
@@ -214,9 +221,8 @@ d3.csv("para_data.csv", type, function(error, data) {
   
 
  
-    
-                            
-            var legend = svg.selectAll('.legend')
+    function remove(label) {
+        var legend = svg.selectAll('.legend')
                         .data(color.domain()) 
                         .enter()
                         .append('g')
@@ -237,9 +243,8 @@ d3.csv("para_data.csv", type, function(error, data) {
                                 .on('click', function(parastatal) {
                                 var rect = d3.select(this);
                                 var enabled = true;
-                                var totalEnabled = d3.sum(data.map(function(d) {
-                                    return (d.enabled) ? 1 : 0;
-                                }));
+                                
+                                
 
                                 if (rect.attr('class') === 'disabled') {
                                     rect.attr('class', '');
@@ -252,7 +257,7 @@ d3.csv("para_data.csv", type, function(error, data) {
                                 pie.value(function(d) {
                                     if (d.parastatal === parastatal) d.enabled = enabled;
                                     return (d.enabled) ? d.allocation : 0;
-                                });
+                                }).exit().remove(legend);
 
                                 path = path.data(pie(data));
 
@@ -273,7 +278,12 @@ d3.csv("para_data.csv", type, function(error, data) {
                                 .text(function(d) { return d.toUpperCase()
                                 });
     
+    }
+                            
+            
 };
+
+
 })
 function type(d) {
   d.allocation = +d.allocation;

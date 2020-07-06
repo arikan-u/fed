@@ -4,16 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://d3js.org/d3.v4.js"></script>
-    <title>Pie Chart</title>
-</head>
-<body>
-<div class="pieChart center">
-    <h4>Pick a year & hover over a segment to see more information.</h4>
-
-    <form action="" id="form"></form>
-</div>
-<style>
- 
+    <title>Piechart 2</title>
+    <style>
         pieChart {
         height: 720px;
         position: relative;
@@ -38,15 +30,25 @@
             width: 80px;
             z-index: 10;
         }
-</style>
-<script>
-var width = 960,
-    height = 960,
+    </style>
+</head>
+<body>
+    <div class="center">
+        <div class="pieChart">
+            <h4>Pick a year & hover over a segment to see more information.</h4>
+        
+            <form action="" id="form"></form>
+        </div>
+    </div>
+
+    <script>
+        var width = 1440,
+    height = 1440,
     radius = Math.min(width, height) / 2;
     legendSpacing = 4;
     legendRectSize = 18;
 
-var color = d3.scaleOrdinal(d3.schemeCategory20);
+var color = d3.scaleOrdinal(d3.schemeCategory20b);
 
 var tooltip = d3.select('.pieChart')        
                             .append('div')                         
@@ -69,7 +71,7 @@ var arc = d3.arc()
     .innerRadius(0)
     .outerRadius(radius - 20);
 
-var svg = d3.select(".donutChart")
+var svg = d3.select(".pieChart")
             .append("svg")
                 .attr("width", width)
                 .attr("height", height)
@@ -87,7 +89,7 @@ d3.csv("para_data.csv", type, function(error, data) {
 
   var label = d3.select("form").selectAll("label")
       .data(byYear)
-    .enter().append("label");
+    .enter().append("label").attr('class', 'container').text(function(d) { return d.key; });
 
   label.append("input")
       .attr("type", "radio")
@@ -99,7 +101,7 @@ d3.csv("para_data.csv", type, function(error, data) {
       .property("checked", true);
 
   label.append("span")
-      .text(function(d) { return d.key; }); 
+      .attr('class', 'checkmark'); 
 
   function change(parastatal) { 
     var path = svg.selectAll("path");
@@ -129,11 +131,11 @@ d3.csv("para_data.csv", type, function(error, data) {
                     .style('left', (d3.event.layerX + 10) + 'px');
                 });
   
+                                pie.value(function(d) {
+                                    if (d.parastatal === parastatal) d.enabled = enabled;
+                                    return (d.enabled) ? d.allocation : 0;
+                                });
 
- 
-    
-                            
-          
                                 //path = path.data(pie(data));
 
                                 path.transition()
@@ -146,13 +148,14 @@ d3.csv("para_data.csv", type, function(error, data) {
                                     };
                                     });
                                 };
- })                            
+    
+});
 
 function type(d) {
   d.allocation = +d.allocation;
   return d;
 }
-
-</script>
+    </script>
+   
 </body>
 </html>
